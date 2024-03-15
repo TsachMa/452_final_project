@@ -136,6 +136,8 @@ class XRD_C_SymNet(nn.Module):
                 nn.ReLU(),
                 nn.Linear(230, 230)
             )
+        else: 
+            self.merge_net = None
 
     def forward(self, x, c):
         if self.xrd_module: 

@@ -3,6 +3,8 @@ from models import *
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from datetime import datetime
+import time
+from tqdm import tqdm
 
 import hydra
 from omegaconf import DictConfig
@@ -37,7 +39,7 @@ def train(cfg: DictConfig):
         f"{type}": {f"{metric}" : np.zeros(max_epochs) for metric in metrics} for type in ['train', 'val']     
     }
 
-    for epoch in range(max_epochs):
+    for epoch in tqdm(range(max_epochs)):
         model.train()  # Set the model to training mode
         total_train_loss = 0
         correct_train = 0
