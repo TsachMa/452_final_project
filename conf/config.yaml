@@ -1,0 +1,29 @@
+# conf/config.yaml
+
+defaults:
+  - _self_
+
+hydra:
+  job:
+    name: third_model
+  
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${hydra.job.name}
+
+data:
+  root_dir: /home/gridsan/tmackey/Miscellaneous/452_final_project
+  data_dir: ${data.root_dir}/data
+  batch_size: 256
+  fraction_of_data: 1
+  composition_embedding: composition1D
+
+model:
+  name: second_model
+  in_channels: 1
+  output_dim: 230
+  composition_model: mlp #note that this MUST match the composition embedding (otherwise, things will break)
+
+training:
+  max_epochs: 10
+  lr: 0.0002
+  weight_decay: 0
