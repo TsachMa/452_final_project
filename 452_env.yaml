@@ -1,0 +1,41 @@
+name: cpsc552v2
+channels:
+  - pytorch
+  - conda-forge
+  - bioconda
+
+dependencies:  
+  - python>=3.11
+  - ipykernel
+  - ipywidgets
+
+  - tqdm
+
+  - pytorch
+
+  - notebook 
+  - nbdev
+
+  - pip
+  - pip:    
+    - magic-impute
+    - pot
+    - torchdyn
+    - git+https://github.com/stefanwebb/flowtorch.git
+
+  - pandas
+  
+  - matplotlib
+  - seaborn   
+  
+  - conda-forge::scikit-learn=1.2.1
+  - numpy
+  - scipy
+  
+  - graphtools
+  
+  # for later
+  - conda-forge::scanpy
+  - conda-forge::anndata==0.8.0
+  - bioconda::scprep=1.2.2
+  - bioconda::phate=1.0.10
