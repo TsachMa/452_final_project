@@ -73,3 +73,63 @@ class xrdData():
         self.composition_embedding = composition_embedding
         self.torch_datasets = {type: self.make_dataset(type, composition_embedding, amt_of_data) for type, amt_of_data in data_and_amt} 
 
+class ExperimentalSimulation(): 
+    def __init__(self, device, crop_start = 4000,
+                        crop_stop = 4000,
+                        noise_range = 0.4,
+                        drop_width = 1000,
+                        drop_freq = 2,
+                        ):
+        
+        self.crop_range = [crop_start, crop_stop]
+        self.noise_range = noise_range
+        self.drop_width = drop_width
+        self.drop_freq = drop_freq
+        self.device = device
+
+    def random_crop(self, xrd):
+        n_rows, n_cols = xrd.shape[0], xrd.shape[2]
+
+        # Generate random start and end indices for each row
+        start_indices = torch.randint(0, self.crop_range[0], (n_rows, 1))
+        end_indices = torch.randint(n_cols - self.crop_range[1], n_cols, (n_rows, 1))
+
+        # Create a range tensor
+        range_tensor = torch.arange(n_cols).unsqueeze(0).expand(n_rows, -1)
+        # Create the mask by comparing the range tensor with start and end indices
+        mask = (range_tensor >= start_indices) & (range_tensor < end_indices)
+
+        return mask.unsqueeze(1).to(self.device) * xrd
+
+    def random_noise(self, xrd):
+        n_rows, n_cols = xrd.shape[0], xrd.shape[2]
+        noise = torch.rand(n_rows, 1, n_cols) * self.noise_range
+
+        return xrd + noise.to(self.device)
+
+    def random_drops(self, xrd):
+        n_rows, n_cols = xrd.shape[0], xrd.shape[2]
+
+        drop_indices = torch.randint(0, n_cols, (n_rows, self.drop_freq))
+
+        mask = torch.zeros((n_rows, n_cols))
+
+        # Create a range tensor
+        range_tensor = torch.arange(n_cols).unsqueeze(0).expand(n_rows, -1)
+
+        for i in range(self.drop_freq):
+            # Create the mask by comparing the range tensor with start and end indices
+            mask += (range_tensor >= drop_indices[:, i].unsqueeze(1) + self.drop_width) 
+            mask += (range_tensor < drop_indices[:, i].unsqueeze(1)  - self.drop_width)
+
+        mask[torch.where(mask != self.drop_freq)] = 0
+        mask /= self.drop_freq
+
+        return mask.unsqueeze(1).to(self.device) * xrd
+    
+    def sim(self, xrd):
+        xrd = self.random_crop(xrd)
+        xrd = self.random_noise(xrd)
+        xrd = self.random_drops(xrd)
+
+        return xrd
