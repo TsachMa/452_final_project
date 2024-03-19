@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --partition=education_gpu
 #SBATCH --gpus 1
-#SBATCH --time=20:00
-#SBATCH --mem=45000
+#SBATCH --time=12:00:00
+#SBATCH --mem=10000
 #SBATCH --output="output/%j_output.txt"
 #SBATCH --error="error/%j_error.txt"
 
@@ -14,7 +14,8 @@
 # module load nccl/2.18.1-cuda11.8
 # source /state/partition1/llgrid/pkg/anaconda/anaconda3-2023a/etc/profile.d/conda.sh
 module load miniconda 
+module load cuDNN/8.7.0.84-CUDA-11.8.0
 conda activate cpsc552v2
 
 # Pass the max_num_atoms parameter to the Hydra configuration
-python main.py
+python main.py -m training.lr=0.0002,0.0004,0.001 hydra.job.name=aug_comp_lr_sweep model.composition_model=mlp 

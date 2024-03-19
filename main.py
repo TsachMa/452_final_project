@@ -7,11 +7,26 @@ import time
 from tqdm import tqdm
 
 import hydra
-from omegaconf import DictConfig
+import wandb
+from omegaconf import DictConfig, OmegaConf
 
 @hydra.main(config_path="conf", config_name="config")
 def train(cfg: DictConfig):
-    
+    # Convert Hydra configuration to a primitive dictionary
+    primitive_cfg = OmegaConf.to_container(cfg, resolve=True, throw_on_missing=True)
+
+    #i would recommend adjusting this to be sensible based on what you're testing 
+    run_name = f"run_{datetime.now().strftime('%Y-%m-%d')}_lr_{cfg.training.lr}" 
+
+    print(run_name)
+
+    # Initialize wandb
+    #@Lucas @Irine, please change the entity argument to ur wandb accounts
+    wandb.init(project="452_final_project", entity="tsach-mackey", config=primitive_cfg, name=run_name)
+
+    # After initializing wandb, you can access the config with:
+    config = wandb.config
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
 
@@ -39,14 +54,23 @@ def train(cfg: DictConfig):
         f"{type}": {f"{metric}" : np.zeros(max_epochs) for metric in metrics} for type in ['train', 'val']     
     }
 
+    #instantiate experimental data simulator 
+    simulator = ExperimentalSimulation(device,
+                                        cfg.data.simulation.crop_start,
+                                        cfg.data.simulation.crop_stop,
+                                        cfg.data.simulation.noise_range,
+                                        cfg.data.simulation.drop_width,
+                                        cfg.data.simulation.drop_freq) 
+
     for epoch in tqdm(range(max_epochs)):
         model.train()  # Set the model to training mode
         total_train_loss = 0
         correct_train = 0
         total_train = 0
 
-        for xrd, composition, targets in train_loader:
+        for xrd, composition, targets in tqdm(train_loader):
             optimizer.zero_grad()
+            xrd = simulator.sim(xrd)
             outputs = model(xrd, composition)
             loss = criterion(outputs, targets)
             loss.backward()
@@ -66,7 +90,8 @@ def train(cfg: DictConfig):
         total_valid = 0
 
         with torch.no_grad():  # No gradients needed for validation
-            for xrd, composition, targets in valid_loader:
+            for xrd, composition, targets in tqdm(valid_loader):
+                xrd = simulator.sim(xrd)
                 outputs = model(xrd, composition)
                 loss = criterion(outputs, targets)
                 total_valid_loss += loss.item()
@@ -85,15 +110,23 @@ def train(cfg: DictConfig):
         log['train']['accuracy'][epoch] = (train_accuracy)
         log['train']['loss'][epoch] = (total_train_loss)
 
+        wandb.log({"train_loss": total_train_loss, "train_accuracy": train_accuracy})
+
         log['val']['accuracy'][epoch] = (valid_accuracy)
         log['val']['loss'][epoch] = (validation_loss)
 
+        wandb.log({"valid_loss": validation_loss, "valid_accuracy": valid_accuracy})
+
     torch.save(model, 'model.pth')
+    #torch.save(model.state_dict(), "model.pth")
+    wandb.save("model.pth")
 
     for data_type, metrics_dict in log.items():
         for metric, array in metrics_dict.items():
             filename = f"{data_type}_{metric}.npy"  # Construct filename, e.g., "train_accuracy.npy"
             np.save(filename, array)  # Save the array to a file
+
+    wandb.finish()
 
 if __name__ == "__main__":
     train()

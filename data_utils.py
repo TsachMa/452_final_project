@@ -74,11 +74,11 @@ class xrdData():
         self.torch_datasets = {type: self.make_dataset(type, composition_embedding, amt_of_data) for type, amt_of_data in data_and_amt} 
 
 class ExperimentalSimulation(): 
-    def __init__(self, device, crop_start = 4000,
+    def __init__(self, device, crop_start = 4000, #crop start from Unif(0, crop_start)
                         crop_stop = 4000,
-                        noise_range = 0.4,
-                        drop_width = 1000,
-                        drop_freq = 2,
+                        noise_range = 0.4, #adds noise from Unif(0, x*max); 0 
+                        drop_width = 1000, #whole is a 8500
+                        drop_freq = 2, # 0 for no noise
                         ):
         
         self.crop_range = [crop_start, crop_stop]
