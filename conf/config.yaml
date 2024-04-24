@@ -15,10 +15,14 @@ hydra:
     subdir: ${hydra.job.num}
 
 data:
+<<<<<<< HEAD
   root_dir: /home/cpsc452_tcm57/452_final_project
+=======
+  root_dir: /home/tcm57/452_final_project
+>>>>>>> 6f68613 (minor changes)
   data_dir: ${data.root_dir}/data
   batch_size: 256
-  fraction_of_data: 1
+  fraction_of_data: 0.1
   composition_embedding: composition1D
   simulation: 
     crop_start: 4000
