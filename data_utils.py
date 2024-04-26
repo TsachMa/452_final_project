@@ -133,3 +133,12 @@ class ExperimentalSimulation():
         xrd = self.random_drops(xrd)
 
         return xrd
+    
+def tokenize_xrd(xrd, token_size):
+    # Get the number of samples (n) and the length of the original sequence
+    n, _, seq_length = xrd.shape
+    
+    # Reshape the vector
+    output_vector = xrd.reshape(n, int(8500 / token_size), token_size)
+    
+    return output_vector
