@@ -71,9 +71,7 @@ class XRD_ConvEmb(nn.Module):
          # Calculate flattened_size dynamically
         self.flattened_size = self._get_flattened_size(input_shape=(1, in_channels, 8500))
         print(self.flattened_size)
-        self.MLP = nn.Sequential(
-            nn.Linear(self.flattened_size, 10000),
-        )
+        
 
     def _get_flattened_size(self, input_shape):
         dummy_input = torch.zeros(input_shape)
@@ -85,7 +83,6 @@ class XRD_ConvEmb(nn.Module):
 
         x = self.conv_layers(x)
         x = self.flatten(x)
-        x = self.MLP(x)
 
         return x.unsqueeze(1)
 

@@ -18,7 +18,7 @@ class merged_Dataset(Dataset):
     
 class xrdData():
     def __init__(self, data_dir, device, 
-                 data_to_normalize = ["composition1D", "composition2D"],
+                 data_to_normalize = ["compositionseq", "composition1D", "composition2D"],
                  datasets_avail = ["train", "val"]):
         
         self.data_dir = data_dir
@@ -33,6 +33,7 @@ class xrdData():
         self.data_attributes['sgs'] = self.get_data("sgs")
         self.data_attributes['composition1D'] = self.get_data("composition")
         self.data_attributes['composition2D'] = self.get_data("composition2D")
+        self.data_attributes['compositionseq'] = self.get_data('compositionseq')
 
         # Move data to device
         self.move_to_device()
@@ -142,3 +143,20 @@ def tokenize_xrd(xrd, token_size, seq_len = 8500):
     output_vector = xrd.reshape(n, int(seq_len / token_size), token_size)
     
     return output_vector
+
+def untokenize_xrd(tokenized_xrd, token_size, seq_len=8500):
+    # Get the number of samples (n) and the length of the tokenized sequence
+    n, seq_token_length, _ = tokenized_xrd.shape
+    
+    # Validate that the number of tokens times the token size equals the original sequence length
+    if seq_token_length * token_size != seq_len:
+        raise ValueError(f"Tokenized sequence length and token size do not match the expected original sequence length of {seq_len}")
+    
+    # Reshape the vector back to the original shape
+    original_vector = tokenized_xrd.reshape(n, 1, seq_len)
+    
+    return original_vector
+
+# Example usage:
+# Assuming 'tokenized_xrd' is the output of the tokenize_xrd function
+# original_xrd = untokenize_xrd(tokenized_xrd, token_size)

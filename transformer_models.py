@@ -14,6 +14,38 @@ import numpy as np
 from data_utils import * 
 from models import XRD_ConvEmb
 
+params_list = []
+indx = 0
+for indx in range(2):
+    param = torch.load(f"param_{indx}.pt")
+    params_list.append(param)
+    print(param.size())
+    indx += 1
+
+elem2vec = params_list[1]
+
+class ElemFormer(nn.Module):
+    def __init__(self):
+        super(ElemFormer, self).__init__()
+        self.encoder_layers = TransformerEncoderLayer(40, 10, 40, 0)
+        self.transformer_encoder = TransformerEncoder(self.encoder_layers, 5)
+        self.flatten = nn.Flatten()
+        self.composition_net = nn.Sequential(
+            nn.Linear(40, 40),
+            nn.ReLU(), 
+            nn.BatchNorm1d(40),
+            nn.Linear(40, 40)
+        )
+        self.batchnorm = nn.BatchNorm1d(40)
+        self.elem2vec = elem2vec
+
+    def forward(self, c): 
+        c = torch.matmul(c, self.elem2vec)
+        c = self.transformer_encoder(c)
+        c = torch.mean(c, dim = 1)
+        c = self.composition_net(c)
+        return c
+
 class TransformerModel(nn.Module):
     def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
                  nlayers: int, dropout: float = 0.5):
@@ -42,7 +74,7 @@ class TransformerModel(nn.Module):
 
         # 2 layer MLP 
         self.mlp = nn.Sequential(
-            nn.Linear(10000, 2300),
+            nn.Linear(12160, 2300),
             nn.ReLU(),
             nn.Dropout(0.5),
             nn.Linear(2300, 1150),
@@ -85,6 +117,15 @@ class TransformerModel(nn.Module):
         self.init_weights()
         self.flatten = nn.Flatten()
 
+        self.elem_former = ElemFormer()
+        self.merge_net = nn.Sequential(
+            nn.Linear(270, 230),
+            # nn.ReLU(),
+            # nn.BatchNorm1d(150),
+            # nn.Dropout(0.5),
+            # nn.Linear(150,230)
+        )
+
     def init_weights(self) -> None:
         initrange = 0.1
         #self.embedding.weight.data.uniform_(-initrange, initrange)
@@ -98,7 +139,7 @@ class TransformerModel(nn.Module):
         return int(np.prod(dummy_output.shape))
     
 
-    def forward(self, src: Tensor, src_mask: Tensor = None) -> Tensor:
+    def forward(self, src: Tensor, composition: Tensor = None, src_mask: Tensor = None) -> Tensor:
         """
         Arguments:
             src: Tensor, shape ``[seq_len, batch_size]``
@@ -108,24 +149,31 @@ class TransformerModel(nn.Module):
             output Tensor of shape ``[seq_len, batch_size, ntoken]``
         """
         src = self.ConvEmb(src)
-        src = tokenize_xrd(src, token_size=50, seq_len=10000)
-        src = F.normalize(src, p=2, dim=1)
+        src = tokenize_xrd(src, token_size=10, seq_len=12160)
+        # src = F.normalize(src, p=2, dim=1)
     
-        src = src * math.sqrt(self.d_model)
+        #src = src * math.sqrt(self.d_model)
         #src = self.ConvEmb(src)
 
         src = self.pos_encoder(src)
         output = self.transformer_encoder(src)
-
+        #output = src
         #reshape the output
-        n, seq_len, d_model = output.size()
-        output = output.reshape(n, d_model, seq_len)
-        #output = self.pooler(output)
+        # n, seq_len, d_model = output.size()
+        # output = output.reshape(n, d_model, seq_len)
+        # #output = self.pooler(output)
         #output = output[:, :, 0]  
         #output = self.conv_layers(output)
-        output = self.flatten(output)
+        #output = self.flatten(output)
+        output = untokenize_xrd(src, token_size=10, seq_len=12160)
         #output = self.MLP(output)
         output = self.mlp(output.squeeze())
+
+        if composition is not None: 
+            composition = self.elem_former(composition)
+            merged = torch.cat([output, composition], dim = 1)
+            output = self.merge_net(merged)
+
         return output
     
 class PositionalEncoding(nn.Module):
@@ -146,6 +194,5 @@ class PositionalEncoding(nn.Module):
         Arguments:
             x: Tensor, shape ``[seq_len, batch_size, embedding_dim]``
         """
-        x = x + self.pe[:x.size(0)]
-        return self.dropout(x)
-    
+        x = x + 0.1*self.pe[:x.size(0)]
+        return x
