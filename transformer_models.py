@@ -17,7 +17,7 @@ from models import XRD_ConvEmb
 params_list = []
 indx = 0
 for indx in range(2):
-    param = torch.load(f"param_{indx}.pt")
+    param = torch.load(f"param_{indx}.pt", map_location=torch.device('cpu'))
     params_list.append(param)
     print(param.size())
     indx += 1

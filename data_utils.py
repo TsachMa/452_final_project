@@ -130,9 +130,9 @@ class ExperimentalSimulation():
     
     def sim(self, xrd):
         xrd = self.random_crop(xrd)
-        xrd = self.random_noise(xrd)
         xrd = self.random_drops(xrd)
-
+        xrd = self.random_noise(xrd)
+    
         return xrd
     
 def tokenize_xrd(xrd, token_size, seq_len = 8500):
