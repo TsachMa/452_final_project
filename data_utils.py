@@ -31,8 +31,8 @@ class xrdData():
         # Load and assign data
         self.data_attributes['xrds'] = self.get_data("pvs")
         self.data_attributes['sgs'] = self.get_data("sgs")
-        self.data_attributes['composition1D'] = self.get_data("composition")
-        self.data_attributes['composition2D'] = self.get_data("composition2D")
+        #self.data_attributes['composition1D'] = self.get_data("composition")
+        #self.data_attributes['composition2D'] = self.get_data("composition2D")
         self.data_attributes['compositionseq'] = self.get_data('compositionseq')
 
         # Move data to device
