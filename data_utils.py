@@ -18,7 +18,7 @@ class merged_Dataset(Dataset):
     
 class xrdData():
     def __init__(self, data_dir, device, 
-                 data_to_normalize = ["compositionseq", "composition1D", "composition2D"],
+                 data_to_normalize = ["compositionseq"],
                  datasets_avail = ["train", "val"]):
         
         self.data_dir = data_dir

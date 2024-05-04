@@ -50,23 +50,39 @@ class XRD_convnet(nn.Module):
         return x
     
 class XRD_ConvEmb(nn.Module):
-    def __init__(self, in_channels, output_dim):
+    def __init__(self, in_channels, output_dim, dropout=0.3, batch_norm=True):
         super(XRD_ConvEmb, self).__init__()
         self.flatten = nn.Flatten()
-        self.conv_layers = nn.Sequential(
-            nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.BatchNorm1d(80),
-            nn.Conv1d(80, 80, 50, stride=5),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.BatchNorm1d(80),
-            nn.Conv1d(80, 80, 25, stride=2),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.BatchNorm1d(80),
-        )
+        if batch_norm:
+            self.conv_layers = nn.Sequential(
+                nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.BatchNorm1d(80),
+                nn.Conv1d(80, 80, 50, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.BatchNorm1d(80),
+                nn.Conv1d(80, 80, 25, stride=2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.BatchNorm1d(80),
+            )
+        else:
+             self.conv_layers = nn.Sequential(
+                nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                # nn.BatchNorm1d(80),
+                nn.Conv1d(80, 80, 50, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                # nn.BatchNorm1d(80),
+                nn.Conv1d(80, 80, 25, stride=2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                # nn.BatchNorm1d(80),
+            )
 
          # Calculate flattened_size dynamically
         self.flattened_size = self._get_flattened_size(input_shape=(1, in_channels, 8500))

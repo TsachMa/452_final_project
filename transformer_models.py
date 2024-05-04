@@ -14,15 +14,6 @@ import numpy as np
 from data_utils import * 
 from models import XRD_ConvEmb
 
-params_list = []
-indx = 0
-for indx in range(2):
-    param = torch.load(f"param_{indx}.pt", map_location=torch.device('cpu'))
-    params_list.append(param)
-    print(param.size())
-    indx += 1
-
-elem2vec = params_list[1]
 
 class ElemFormer(nn.Module):
     def __init__(self):
@@ -37,6 +28,17 @@ class ElemFormer(nn.Module):
             nn.Linear(40, 40)
         )
         self.batchnorm = nn.BatchNorm1d(40)
+        
+        params_list = []
+        indx = 0
+        for indx in range(2):
+            param = torch.load(f"param_{indx}.pt", map_location=torch.device('cpu'))
+            params_list.append(param)
+            print(param.size())
+            indx += 1
+        
+        elem2vec = params_list[1]
+        
         self.elem2vec = elem2vec
 
     def forward(self, c): 
@@ -48,7 +50,7 @@ class ElemFormer(nn.Module):
 
 class TransformerModel(nn.Module):
     def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
-                 nlayers: int, dropout: float = 0.5):
+                 nlayers: int, dropout: float = 0.5, batch_norm=True):
         super().__init__()
         self.model_type = 'Transformer'
         self.pos_encoder = PositionalEncoding(d_model, dropout)
@@ -57,29 +59,44 @@ class TransformerModel(nn.Module):
         #self.embedding = nn.Embedding(ntoken, d_model)
         self.d_model = d_model
         self.seq_len = int(8500 / d_model)
-        self.ConvEmb = nn.Sequential(
-            nn.BatchNorm1d(self.seq_len),
-            nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
-            nn.ReLU(),
-            # nn.Dropout(0.3),
-            nn.BatchNorm1d(self.seq_len),
-            # nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
-            # nn.Dropout(0.3),
-            # nn.BatchNorm1d(self.seq_len),
-            # nn.ReLU(),
-            # nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
-        )
-
-        self.ConvEmb = XRD_ConvEmb(in_channels=1, output_dim = 8500)
+        if batch_norm:
+            self.ConvEmb = nn.Sequential(
+                nn.BatchNorm1d(self.seq_len),
+                nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
+                nn.ReLU(),
+                # nn.Dropout(0.3),
+                nn.BatchNorm1d(self.seq_len),
+                # nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
+                # nn.Dropout(0.3),
+                # nn.BatchNorm1d(self.seq_len),
+                # nn.ReLU(),
+                # nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
+            )
+        else:
+            self.ConvEmb = nn.Sequential(
+                nn.BatchNorm1d(self.seq_len),
+                nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
+                nn.ReLU(),
+                # nn.Dropout(0.3),
+                # nn.BatchNorm1d(self.seq_len),
+                # nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
+                # nn.Dropout(0.3),
+                # nn.BatchNorm1d(self.seq_len),
+                # nn.ReLU(),
+                # nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
+            )
+            
+    
+        self.ConvEmb = XRD_ConvEmb(in_channels=1, output_dim=8500, dropout=dropout, batch_norm=batch_norm)
 
         # 2 layer MLP 
         self.mlp = nn.Sequential(
             nn.Linear(12160, 2300),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(2300, 1150),
             nn.ReLU(),
-            nn.Dropout(0.5),
+            nn.Dropout(dropout),
             nn.Linear(1150, 230)
         )
 
