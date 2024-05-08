@@ -14,7 +14,6 @@ import numpy as np
 from data_utils import * 
 from models import XRD_ConvEmb
 
-
 class ElemFormer(nn.Module):
     def __init__(self):
         super(ElemFormer, self).__init__()

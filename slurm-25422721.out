@@ -1,3 +1,0 @@
-0 S tmackey   169821  169809  0  80   0 -   868 -      12:45 ?        00:00:00 grep python
-Node: d-10-14-2
-slurmstepd-d-10-14-2: error: *** JOB 25422721 ON d-10-14-2 CANCELLED AT 2024-03-15T12:46:34 ***

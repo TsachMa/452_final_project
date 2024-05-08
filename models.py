@@ -2,53 +2,6 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-class XRD_convnet(nn.Module):
-    def __init__(self, in_channels, output_dim):
-        super(XRD_convnet, self).__init__()
-        self.flatten = nn.Flatten()
-        self.conv_layers = nn.Sequential(
-            nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.BatchNorm1d(80),
-            nn.Conv1d(80, 80, 50, stride=5),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.BatchNorm1d(80),
-            nn.Conv1d(80, 80, 25, stride=2),
-            nn.ReLU(),
-            nn.Dropout(0.3),
-            nn.BatchNorm1d(80),
-        )
-
-         # Calculate flattened_size dynamically
-        self.flattened_size = self._get_flattened_size(input_shape=(1, in_channels, 8500))
-
-        self.MLP = nn.Sequential(
-            nn.Linear(self.flattened_size, 2300),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(2300, 1150),
-            nn.ReLU(),
-            nn.Dropout(0.5),
-            nn.Linear(1150, output_dim)
-        )
-
-
-    def _get_flattened_size(self, input_shape):
-        dummy_input = torch.zeros(input_shape)
-        with torch.no_grad():
-            dummy_output = self.conv_layers(dummy_input)
-        return int(np.prod(dummy_output.shape))
-    
-    def forward(self, x,): 
-
-        x = self.conv_layers(x)
-        x = self.flatten(x)
-        x = self.MLP(x)
-
-        return x
-    
 class XRD_ConvEmb(nn.Module):
     def __init__(self, in_channels, output_dim, dropout=0.3, batch_norm=True):
         super(XRD_ConvEmb, self).__init__()
@@ -102,6 +55,55 @@ class XRD_ConvEmb(nn.Module):
 
         return x.unsqueeze(1)
 
+#### OLD ####
+
+class XRD_convnet(nn.Module):
+    def __init__(self, in_channels, output_dim):
+        super(XRD_convnet, self).__init__()
+        self.flatten = nn.Flatten()
+        self.conv_layers = nn.Sequential(
+            nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.BatchNorm1d(80),
+            nn.Conv1d(80, 80, 50, stride=5),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.BatchNorm1d(80),
+            nn.Conv1d(80, 80, 25, stride=2),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.BatchNorm1d(80),
+        )
+
+         # Calculate flattened_size dynamically
+        self.flattened_size = self._get_flattened_size(input_shape=(1, in_channels, 8500))
+
+        self.MLP = nn.Sequential(
+            nn.Linear(self.flattened_size, 2300),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(2300, 1150),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(1150, output_dim)
+        )
+
+
+    def _get_flattened_size(self, input_shape):
+        dummy_input = torch.zeros(input_shape)
+        with torch.no_grad():
+            dummy_output = self.conv_layers(dummy_input)
+        return int(np.prod(dummy_output.shape))
+    
+    def forward(self, x,): 
+
+        x = self.conv_layers(x)
+        x = self.flatten(x)
+        x = self.MLP(x)
+
+        return x
+    
 
 
 class composition_MLP(nn.Module):
