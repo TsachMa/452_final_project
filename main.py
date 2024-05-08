@@ -22,7 +22,7 @@ def train(cfg: DictConfig):
 
     # Initialize wandb
     #@Lucas @Irine, please change the entity argument to ur wandb accounts
-    wandb.init(project="452_final_project", entity="tsach-mackey", config=primitive_cfg, name=run_name)
+    wandb.init(project="452_final_project", entity="i-jay", config=primitive_cfg, name=run_name)
 
     # After initializing wandb, you can access the config with:
     config = wandb.config

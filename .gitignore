@@ -8,3 +8,4 @@ multirun/
 
 __pycache__
 slurm*
+data_archive/
