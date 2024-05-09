@@ -1,11 +1,6 @@
 data/
 data.zip
-models/
-outputs/
-error/
-output/
-multirun/
 
-__pycache__
+__pycache__/
+.ipynb_checkpoints/
 slurm*
-data_archive/
