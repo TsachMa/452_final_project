@@ -47,6 +47,55 @@ class ElemFormer(nn.Module):
         c = self.composition_net(c)
         return c
 
+class XRD_ConvEmb(nn.Module):
+    def __init__(self, in_channels, output_dim, dropout=0.3, batch_norm=True):
+        super(XRD_ConvEmb, self).__init__()
+        self.flatten = nn.Flatten()
+        if batch_norm:
+            self.conv_layers = nn.Sequential(
+                nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.BatchNorm1d(80),
+                nn.Conv1d(80, 80, 50, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.BatchNorm1d(80),
+                nn.Conv1d(80, 80, 25, stride=2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.BatchNorm1d(80),
+            )
+        else:
+             self.conv_layers = nn.Sequential(
+                nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Conv1d(80, 80, 50, stride=5),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+                nn.Conv1d(80, 80, 25, stride=2),
+                nn.ReLU(),
+                nn.Dropout(dropout),
+            )
+
+         # Calculate flattened_size dynamically
+        self.flattened_size = self._get_flattened_size(input_shape=(1, in_channels, 8500))
+        print(self.flattened_size)
+        
+    def _get_flattened_size(self, input_shape):
+        dummy_input = torch.zeros(input_shape)
+        with torch.no_grad():
+            dummy_output = self.conv_layers(dummy_input)
+        return int(np.prod(dummy_output.shape))
+    
+    def forward(self, x,): 
+
+        x = self.conv_layers(x)
+        x = self.flatten(x)
+
+        return x.unsqueeze(1)
+
 class TransformerModel(nn.Module):
     def __init__(self, ntoken: int, d_model: int, nhead: int, d_hid: int,
                  nlayers: int, dropout: float = 0.5, batch_norm=True):
@@ -58,20 +107,6 @@ class TransformerModel(nn.Module):
         
         self.d_model = d_model
         self.seq_len = int(8500 / d_model)
-        if batch_norm:
-            self.ConvEmb = nn.Sequential(
-                nn.BatchNorm1d(self.seq_len),
-                nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
-                nn.ReLU(),
-                nn.BatchNorm1d(self.seq_len),
-            )
-        else:
-            self.ConvEmb = nn.Sequential(
-                nn.BatchNorm1d(self.seq_len),
-                nn.Conv1d(in_channels = self.seq_len, out_channels = self.seq_len, kernel_size = 21, stride=1, padding = 10),
-                nn.ReLU(),
-            )
-    
         self.ConvEmb = XRD_ConvEmb(in_channels=1, output_dim=8500, dropout=dropout, batch_norm=batch_norm)
 
         # 2 layer MLP 
@@ -152,52 +187,4 @@ class PositionalEncoding(nn.Module):
         x = x + 0.1*self.pe[:x.size(0)]
         return x
     
-class XRD_ConvEmb(nn.Module):
-    def __init__(self, in_channels, output_dim, dropout=0.3, batch_norm=True):
-        super(XRD_ConvEmb, self).__init__()
-        self.flatten = nn.Flatten()
-        if batch_norm:
-            self.conv_layers = nn.Sequential(
-                nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-                nn.BatchNorm1d(80),
-                nn.Conv1d(80, 80, 50, stride=5),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-                nn.BatchNorm1d(80),
-                nn.Conv1d(80, 80, 25, stride=2),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-                nn.BatchNorm1d(80),
-            )
-        else:
-             self.conv_layers = nn.Sequential(
-                nn.Conv1d(in_channels, 80, kernel_size = 100, stride=5),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-                nn.Conv1d(80, 80, 50, stride=5),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-                nn.Conv1d(80, 80, 25, stride=2),
-                nn.ReLU(),
-                nn.Dropout(dropout),
-            )
 
-         # Calculate flattened_size dynamically
-        self.flattened_size = self._get_flattened_size(input_shape=(1, in_channels, 8500))
-        print(self.flattened_size)
-        
-
-    def _get_flattened_size(self, input_shape):
-        dummy_input = torch.zeros(input_shape)
-        with torch.no_grad():
-            dummy_output = self.conv_layers(dummy_input)
-        return int(np.prod(dummy_output.shape))
-    
-    def forward(self, x,): 
-
-        x = self.conv_layers(x)
-        x = self.flatten(x)
-
-        return x.unsqueeze(1)
