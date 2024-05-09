@@ -139,17 +139,15 @@ output_dim = 230  # Output dimension
 token_size = 10 #dimension of the tokens 
 
 
-# TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
-# model = TransModel
+TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
+model = TransModel
 
-# # Define optimizer and loss function
-# weight_decay = 0  # Example value, adjust based on your needs
-# optimizer = optim.Adam(model.parameters(), lr=0.0002, weight_decay=weight_decay)
-# criterion = nn.CrossEntropyLoss()
+# Define optimizer and loss function
+weight_decay = 0  # Example value, adjust based on your needs
+optimizer = optim.Adam(model.parameters(), lr=0.0002, weight_decay=weight_decay)
+criterion = nn.CrossEntropyLoss()
 
-# train_loop('unregularized')
-
-
+train_loop('unregularized')
 
 
 TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
@@ -160,8 +158,6 @@ optimizer = optim.Adam(model.parameters(), lr=0.0002, weight_decay=weight_decay)
 criterion = RegularizedLoss(model, nn.CrossEntropyLoss(), l1=1e-4)
 
 train_loop('l1_regularized')
-
-
 
 
 
@@ -180,7 +176,6 @@ model = TransModel
 
 weight_decay = 1e-3  # Example value, adjust based on your needs
 optimizer = optim.Adam(model.parameters(), lr=0.00001, weight_decay=weight_decay)
-# criterion = RegularizedLoss(model, nn.CrossEntropyLoss(), l2=1e-3)
 criterion = nn.CrossEntropyLoss()
 
 train_loop('l2_regularized')
