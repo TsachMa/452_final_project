@@ -5,4 +5,7 @@ outputs/
 error/
 output/
 multirun/
+
+__pycache__
+slurm*
 data_archive/
