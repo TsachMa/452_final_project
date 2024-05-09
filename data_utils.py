@@ -68,7 +68,7 @@ class xrdData():
 
         amt_of_training_data = int(fraction_of_total_data * self.num_samples) #only fractionate the training data 
 
-        data_and_amt = zip(self.datasets_avail, [amt_of_training_data, 1*len(self.data_attributes['xrds']['val'])]) # use full val data
+        data_and_amt = zip(self.datasets_avail, [amt_of_training_data, 1*len(self.data_attributes['xrds']['val']), 1*len(self.data_attributes['xrds']['val'])]) # use full val data
 
         #make pytorch datasets
         self.composition_embedding = composition_embedding
