@@ -139,7 +139,7 @@ output_dim = 230  # Output dimension
 token_size = 10 #dimension of the tokens 
 
 
-TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
+TransModel = FullModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
 model = TransModel
 
 # Define optimizer and loss function
@@ -150,7 +150,7 @@ criterion = nn.CrossEntropyLoss()
 train_loop('unregularized')
 
 
-TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
+TransModel = FullModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
 model = TransModel
 
 weight_decay = 0  # Example value, adjust based on your needs
@@ -161,7 +161,7 @@ train_loop('l1_regularized')
 
 
 
-TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
+TransModel = FullModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
 model = TransModel
 
 weight_decay = 0  # Example value, adjust based on your needs
@@ -171,7 +171,7 @@ criterion = RegularizedLoss(model, nn.CrossEntropyLoss(), l1=1e-4, full=False)
 train_loop('l1_comp_regularized')
 
 
-TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
+TransModel = FullModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout = 0.5).to(device)
 model = TransModel
 
 weight_decay = 1e-3  # Example value, adjust based on your needs
@@ -181,7 +181,7 @@ criterion = nn.CrossEntropyLoss()
 train_loop('l2_regularized')
 
 
-TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout=0.5, batch_norm=False).to(device)
+TransModel = FullModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout=0.5, batch_norm=False).to(device)
 model = TransModel
 
 weight_decay = 0  # Example value, adjust based on your needs
@@ -192,7 +192,7 @@ train_loop('no_batch_norm')
 
 
 
-TransModel = TransformerModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout=0).to(device)
+TransModel = FullModel(ntoken = output_dim, d_model = token_size, nhead = 10, d_hid=50, nlayers=1, dropout=0).to(device)
 model = TransModel
 
 weight_decay = 0  # Example value, adjust based on your needs

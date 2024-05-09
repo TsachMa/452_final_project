@@ -1,5 +1,4 @@
 # Elem-XtalFormer (EXF)
-https://docs.google.com/document/d/1Ik2R_p8RlXFN_Vl2qdooxouiQTnoraYKnIgERmSSRbU/edit
 
 This implements the Elem-XtalFormer (EXF) model to predict crystal symmetry space groups from X-ray diffraction and chemical composition data
 
